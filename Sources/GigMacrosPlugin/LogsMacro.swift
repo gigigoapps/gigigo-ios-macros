@@ -21,8 +21,9 @@ public struct LogDebugMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
+        let message = \(argument)
         if LogManager.shared.logLevel >= .debug {
-            LogManager.logger.debug(\(argument))
+            LogManager.logger.debug("\\(message)")
         }
         }()
         """
@@ -41,8 +42,9 @@ public struct LogInfoMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
+        let message = \(argument)
         if LogManager.shared.logLevel >= .info {
-            LogManager.logger.info(\(argument))
+            LogManager.logger.info("\\(message)")
         }
         }()
         """
@@ -61,8 +63,9 @@ public struct LogWarnMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
+        let message = \(argument)
         if LogManager.shared.logLevel >= .error {
-            LogManager.logger.warning(\(argument))
+            LogManager.logger.warning("\\(message)")
         }
         }()
         """
