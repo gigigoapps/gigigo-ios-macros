@@ -32,3 +32,4 @@ class LogManager {
 #logInfo("Info test")
 #logWarn("Warning test")
 #logError(NSError())
+#logError(nil)

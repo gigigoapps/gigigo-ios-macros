@@ -17,4 +17,4 @@ public macro logInfo(_ message: String) = #externalMacro(module: "GigMacrosPlugi
 public macro logWarn(_ message: String) = #externalMacro(module: "GigMacrosPlugin", type: "LogWarnMacro")
 
 @freestanding(expression)
-public macro logError(_ error: Error) = #externalMacro(module: "GigMacrosPlugin", type: "LogErrorMacro")
+public macro logError(_ error: Error?) = #externalMacro(module: "GigMacrosPlugin", type: "LogErrorMacro")
