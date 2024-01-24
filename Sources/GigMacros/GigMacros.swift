@@ -1,7 +1,7 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-@freestanding(declaration, names: arbitrary)
+@freestanding(declaration, names: named(LogLevel), named(LogManager))
 public macro logManager(subsystem: String, category: String) = #externalMacro(module: "GigMacrosPlugin", type: "LogManagerMacro")
 
 @freestanding(expression)
