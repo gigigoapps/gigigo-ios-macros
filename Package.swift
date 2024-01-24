@@ -6,7 +6,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "GigMacros",
-    platforms: [.macOS(.v10_15), .iOS(.v14), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [.macOS(.v11), .iOS(.v14), .tvOS(.v14), .watchOS(.v8), .macCatalyst(.v14)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(

@@ -3,44 +3,240 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
-#if canImport(GigMacrosMacros)
-import GigMacrosMacros
+#if canImport(GigMacrosPlugin)
+import GigMacrosPlugin
 
 let testMacros: [String: Macro.Type] = [
-    "stringify": StringifyMacro.self,
+    "logManager": LogManagerMacro.self,
+    "logDebug": LogDebugMacro.self,
+    "logInfo": LogInfoMacro.self,
+    "logWarn": LogWarnMacro.self,
+    "logError": LogErrorMacro.self
 ]
 #endif
 
 final class GigMacrosTests: XCTestCase {
-    func testMacro() throws {
-        #if canImport(GigMacrosMacros)
+    func testLogManagerMacro() throws {
+#if canImport(GigMacrosPlugin)
         assertMacroExpansion(
             """
-            #stringify(a + b)
+            #logManager(subsystem: "SubsystemTest", category: "CategoryTest")
             """,
             expandedSource: """
-            (a + b, "a + b")
+            enum LogLevel: Int, Comparable {
+                /// No log will be shown.
+                case none = 0
+            
+                /// Only warnings and errors.
+                case error = 1
+            
+                /// Errors and relevant information.
+                case info = 2
+            
+                /// Request and Responses will be displayed.
+                case debug = 3
+            
+                static func < (lhs: LogLevel, rhs: LogLevel) -> Bool {
+                    lhs.rawValue < rhs.rawValue
+                }
+            }
+            class LogManager {
+                static let shared = LogManager()
+                static let logger = Logger(subsystem: "SubsystemTest", category: "CategoryTest")
+            
+                var logLevel: LogLevel = .none
+            }
             """,
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-
-    func testMacroWithStringLiteral() throws {
-        #if canImport(GigMacrosMacros)
+    
+    func testDebugWithStringLiteral() throws {
+#if canImport(GigMacrosPlugin)
         assertMacroExpansion(
             #"""
-            #stringify("Hello, \(name)")
+            #logDebug("Debug test")
             """#,
-            expandedSource: #"""
-            ("Hello, \(name)", #""Hello, \(name)""#)
+            expandedSource:
+            #"""
+            {
+                if LogManager.shared.logLevel >= .debug {
+                    let message = "Debug test"
+                    LogManager.logger.debug("\(message)")
+                }
+            }()
             """#,
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
+    }
+    
+    func testDebugWithStringObject() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            let testString = "test"
+            #logDebug(testString)
+            """#,
+            expandedSource:
+            #"""
+            let testString = "test"
+            {
+                if LogManager.shared.logLevel >= .debug {
+                    let message = testString
+                    LogManager.logger.debug("\(message)")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+    
+    func testInfoWithStringLiteral() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            #logInfo("Info test")
+            """#,
+            expandedSource:
+            #"""
+            {
+                if LogManager.shared.logLevel >= .info {
+                    let message = "Info test"
+                    LogManager.logger.info("\(message)")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+    
+    func testInfoWithStringObject() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            let testString = "test"
+            #logInfo(testString)
+            """#,
+            expandedSource:
+            #"""
+            let testString = "test"
+            {
+                if LogManager.shared.logLevel >= .info {
+                    let message = testString
+                    LogManager.logger.info("\(message)")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+    
+    func testWarningWithStringLiteral() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            #logWarn("Warning test")
+            """#,
+            expandedSource:
+            #"""
+            {
+                if LogManager.shared.logLevel >= .error {
+                    let message = "Warning test"
+                    LogManager.logger.warning("\(message)")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+    
+    func testWarningWithStringObject() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            let testString = "test"
+            #logWarn(testString)
+            """#,
+            expandedSource:
+            #"""
+            let testString = "test"
+            {
+                if LogManager.shared.logLevel >= .error {
+                    let message = testString
+                    LogManager.logger.warning("\(message)")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+    
+    func testErrorWithErrorObject() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            #logError(NSError())
+            """#,
+            expandedSource:
+            #"""
+            {
+                if LogManager.shared.logLevel >= .error {
+                    guard let err = NSError() as NSError? else {
+                        return
+                    }
+                    LogManager.logger.fault("\(err.localizedDescription)\n\t⤷USER INFO: \(err.userInfo)\n")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+    
+    func testErrorWithNil() throws {
+#if canImport(GigMacrosPlugin)
+        assertMacroExpansion(
+            #"""
+            #logError(nil)
+            """#,
+            expandedSource:
+            #"""
+            {
+                if LogManager.shared.logLevel >= .error {
+                    guard let err = nil as NSError? else {
+                        return
+                    }
+                    LogManager.logger.fault("\(err.localizedDescription)\n\t⤷USER INFO: \(err.userInfo)\n")
+                }
+            }()
+            """#,
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
     }
 }
