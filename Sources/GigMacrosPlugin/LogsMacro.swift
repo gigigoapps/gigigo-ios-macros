@@ -44,7 +44,7 @@ public struct LogManagerMacro: DeclarationMacro {
         
         let logManager: DeclSyntax =
         """
-        class LogManager {
+        class LogManager: @unchecked Sendable {
             static let shared = LogManager()
             static let logger = Logger(subsystem: \(subsystem.expression), category: \(category.expression))
         

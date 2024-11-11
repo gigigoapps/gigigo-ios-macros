@@ -40,7 +40,7 @@ final class GigMacrosTests: XCTestCase {
                     lhs.rawValue < rhs.rawValue
                 }
             }
-            class LogManager {
+            class LogManager: @unchecked Sendable {
                 static let shared = LogManager()
                 static let logger = Logger(subsystem: "SubsystemTest", category: "CategoryTest")
             
