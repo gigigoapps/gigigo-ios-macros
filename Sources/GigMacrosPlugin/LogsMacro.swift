@@ -44,11 +44,23 @@ public struct LogManagerMacro: DeclarationMacro {
         
         let logManager: DeclSyntax =
         """
-        class LogManager {
-            static let shared = LogManager()
+        class LogManager: @unchecked Sendable {
             static let logger = Logger(subsystem: \(subsystem.expression), category: \(category.expression))
-        
-            var logLevel: LogLevel = .none
+            private static let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
+            private static var logLevelSynced: LogLevel = .none
+
+            static var logLevel: LogLevel {
+                get {
+                    self.staticQueue.sync {
+                        self.logLevelSynced
+                    }
+                }
+                set {
+                    self.staticQueue.async(flags: .barrier) {
+                        self.logLevelSynced = newValue
+                    }
+                }
+            }
         }
         """
         return [
@@ -69,7 +81,7 @@ public struct LogDebugMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.shared.logLevel >= .debug {
+        if LogManager.logLevel >= .debug {
             let message = \(argument)
             LogManager.logger.debug("\\(message)")
         }   
@@ -90,7 +102,7 @@ public struct LogInfoMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.shared.logLevel >= .info {
+        if LogManager.logLevel >= .info {
             let message = \(argument)
             LogManager.logger.info("\\(message)")
         }
@@ -111,7 +123,7 @@ public struct LogWarnMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.shared.logLevel >= .error {
+        if LogManager.logLevel >= .error {
             let message = \(argument)
             LogManager.logger.warning("\\(message)")
         }
@@ -132,7 +144,7 @@ public struct LogErrorMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.shared.logLevel >= .error {
+        if LogManager.logLevel >= .error {
             guard let err = \(argument) as NSError? else { return }
             LogManager.logger.fault("\\(err.localizedDescription)\\n\\t⤷USER INFO: \\(err.userInfo)\\n")
         }
