@@ -45,7 +45,6 @@ public struct LogManagerMacro: DeclarationMacro {
         let logManager: DeclSyntax =
         """
         class LogManager: @unchecked Sendable {
-            static let shared = LogManager()
             static let logger = Logger(subsystem: \(subsystem.expression), category: \(category.expression))
             private static let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
             private static var logLevelSynced: LogLevel = .none
