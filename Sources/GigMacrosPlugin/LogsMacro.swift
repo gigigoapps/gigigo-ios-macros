@@ -47,7 +47,7 @@ public struct LogManagerMacro: DeclarationMacro {
         class LogManager: @unchecked Sendable {
             static let logger = Logger(subsystem: \(subsystem.expression), category: \(category.expression))
             private static let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
-                nonisolated(unsafe) private static var logLevelSynced: LogLevel = .none
+            nonisolated(unsafe) private static var logLevelSynced: LogLevel = .none
 
             static var logLevel: LogLevel {
                 get {
