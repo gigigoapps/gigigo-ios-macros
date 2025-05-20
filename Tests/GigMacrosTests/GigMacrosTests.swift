@@ -43,7 +43,7 @@ final class GigMacrosTests: XCTestCase {
             class LogManager: @unchecked Sendable {
                 static let logger = Logger(subsystem: "SubsystemTest", category: "CategoryTest")
                 private static let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
-                private static var logLevelSynced: LogLevel = .none
+                nonisolated(unsafe) private static var logLevelSynced: LogLevel = .none
 
                 static var logLevel: LogLevel {
                     get {
