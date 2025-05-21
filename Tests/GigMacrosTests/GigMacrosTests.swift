@@ -41,11 +41,12 @@ final class GigMacrosTests: XCTestCase {
                 }
             }
             class LogManager: @unchecked Sendable {
+                static let shared = LogManager()
                 static let logger = Logger(subsystem: "SubsystemTest", category: "CategoryTest")
-                private static let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
+                private let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
                 private var logLevelSynced: LogLevel = .none
 
-                static var logLevel: LogLevel {
+                var logLevel: LogLevel {
                     get {
                         self.staticQueue.sync {
                             self.logLevelSynced
@@ -75,7 +76,7 @@ final class GigMacrosTests: XCTestCase {
             expandedSource:
             #"""
             {
-                if LogManager.logLevel >= .debug {
+                if LogManager.shared.logLevel >= .debug {
                     let message = "Debug test"
                     LogManager.logger.debug("\(message)")
                 }
@@ -99,7 +100,7 @@ final class GigMacrosTests: XCTestCase {
             #"""
             let testString = "test"
             {
-                if LogManager.logLevel >= .debug {
+                if LogManager.shared.logLevel >= .debug {
                     let message = testString
                     LogManager.logger.debug("\(message)")
                 }
@@ -121,7 +122,7 @@ final class GigMacrosTests: XCTestCase {
             expandedSource:
             #"""
             {
-                if LogManager.logLevel >= .info {
+                if LogManager.shared.logLevel >= .info {
                     let message = "Info test"
                     LogManager.logger.info("\(message)")
                 }
@@ -145,7 +146,7 @@ final class GigMacrosTests: XCTestCase {
             #"""
             let testString = "test"
             {
-                if LogManager.logLevel >= .info {
+                if LogManager.shared.logLevel >= .info {
                     let message = testString
                     LogManager.logger.info("\(message)")
                 }
@@ -167,7 +168,7 @@ final class GigMacrosTests: XCTestCase {
             expandedSource:
             #"""
             {
-                if LogManager.logLevel >= .error {
+                if LogManager.shared.logLevel >= .error {
                     let message = "Warning test"
                     LogManager.logger.warning("\(message)")
                 }
@@ -191,7 +192,7 @@ final class GigMacrosTests: XCTestCase {
             #"""
             let testString = "test"
             {
-                if LogManager.logLevel >= .error {
+                if LogManager.shared.logLevel >= .error {
                     let message = testString
                     LogManager.logger.warning("\(message)")
                 }
@@ -213,7 +214,7 @@ final class GigMacrosTests: XCTestCase {
             expandedSource:
             #"""
             {
-                if LogManager.logLevel >= .error {
+                if LogManager.shared.logLevel >= .error {
                     guard let err = NSError() as NSError? else {
                         return
                     }
@@ -237,7 +238,7 @@ final class GigMacrosTests: XCTestCase {
             expandedSource:
             #"""
             {
-                if LogManager.logLevel >= .error {
+                if LogManager.shared.logLevel >= .error {
                     guard let err = nil as NSError? else {
                         return
                     }
