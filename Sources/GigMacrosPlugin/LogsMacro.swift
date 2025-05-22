@@ -45,11 +45,12 @@ public struct LogManagerMacro: DeclarationMacro {
         let logManager: DeclSyntax =
         """
         class LogManager: @unchecked Sendable {
+            static let shared = LogManager()
             static let logger = Logger(subsystem: \(subsystem.expression), category: \(category.expression))
-            private static let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
-            private static var logLevelSynced: LogLevel = .none
+            private let staticQueue = DispatchQueue(label: "logManagerStaticQueue")
+            private var logLevelSynced: LogLevel = .none
 
-            static var logLevel: LogLevel {
+            var logLevel: LogLevel {
                 get {
                     self.staticQueue.sync {
                         self.logLevelSynced
@@ -81,7 +82,7 @@ public struct LogDebugMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.logLevel >= .debug {
+        if LogManager.shared.logLevel >= .debug {
             let message = \(argument)
             LogManager.logger.debug("\\(message)")
         }   
@@ -102,7 +103,7 @@ public struct LogInfoMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.logLevel >= .info {
+        if LogManager.shared.logLevel >= .info {
             let message = \(argument)
             LogManager.logger.info("\\(message)")
         }
@@ -123,7 +124,7 @@ public struct LogWarnMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.logLevel >= .error {
+        if LogManager.shared.logLevel >= .error {
             let message = \(argument)
             LogManager.logger.warning("\\(message)")
         }
@@ -144,7 +145,7 @@ public struct LogErrorMacro: ExpressionMacro {
         let expression: ExprSyntax =
         """
         {
-        if LogManager.logLevel >= .error {
+        if LogManager.shared.logLevel >= .error {
             guard let err = \(argument) as NSError? else { return }
             LogManager.logger.fault("\\(err.localizedDescription)\\n\\t⤷USER INFO: \\(err.userInfo)\\n")
         }
